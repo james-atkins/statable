@@ -1,9 +1,3 @@
-# stata_run <- function(commands, data = parent.frame(), stata = stata_default()) {
-#   data <- Filter(function(x) inherits(eval(x), "data.frame"), as.list(data))
-#   globals <- .extract_globals(commands, data)
-#   .stata_run(commands, globals, stata)
-# }
-
 # Search commands for globals of the form $R_variable_name.
 .extract_globals <- function(commands, data, dir) {
   stopifnot(typeof(commands) == "character")

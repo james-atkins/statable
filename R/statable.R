@@ -116,7 +116,7 @@ new_session <- function(session, stata_path) {
   if (.Platform$OS.type == "unix") {
     new_session_named_pipe(session, stata_path)
   } else if (.Platform$OS.type == "windows") {
-    stop("statable does not currently support Microsoft Windows")
+    new_session_polling(session, stata_path)
   } else {
     stop("Stata is not supported on this platform")
   }
