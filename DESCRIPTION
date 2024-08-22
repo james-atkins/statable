@@ -1,0 +1,20 @@
+Package: statable
+Type: Package
+Title: Run Stata Commands from R
+Version: 0.1.0
+Authors@R: person("James", "Atkins",
+           email = "james@jamesatkins.com", role = c("aut", "cre"))
+Description: An R to Stata interface that allows Stata commands to be executed
+    from within R. Data sets can easily be transferred between R and Stata, and
+    Stata estimation results can be returned to R.
+License: MIT + file LICENSE
+Encoding: UTF-8
+URL: https://github.com/james-atkins/statable
+BugReports: https://github.com/james-atkins/statable/issues
+Suggests: 
+    testthat (>= 3.0.0)
+Config/testthat/edition: 3
+Imports: 
+    haven,
+    processx
+RoxygenNote: 7.3.2
