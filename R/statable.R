@@ -23,14 +23,14 @@ stata_path <- function(path = NULL) {
 #'
 #' @export
 stata_run <- function(commands, session = stata_default_session()) {
-  # Parse commands for any global macros...
+  # Parse commands for any global macros
+  globals <- .extract_globals(commands, parent.frame(), session$dir)
+  set_globals <- sprintf('global %s "%s"', names(globals), globals)
 
-  # Macro names are up to 32 characters long for global macros
-  # stopifnot(all(nchar(names(globals)) <= 32))
-  # stopifnot(all(file.exists(globals)))
+  # Send commands to Stata
+  run_commands(session, commands, set_globals)
 
-  run_commands(session, commands, c())
-
+  # Extract output from log file
   prev_line <- NULL
   found_start <- FALSE
   found_end <- FALSE
