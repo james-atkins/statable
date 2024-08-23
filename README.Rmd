@@ -1,0 +1,92 @@
+---
+output: github_document
+---
+
+<!-- README.md is generated from README.Rmd. Please edit that file -->
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>",
+  fig.path = "man/figures/README-",
+  out.width = "100%"
+)
+```
+
+# statable -  Run Stata commands from R
+
+<!-- badges: start -->
+<!-- badges: end -->
+
+An R to Stata interface that allows Stata commands to be executed from R.
+
+## Installation
+
+`statable` is not currently on CRAN.
+You can install the development version of statable from [GitHub](https://github.com/) with:
+
+``` r
+# install.packages("pak")
+pak::pak("james-atkins/statable")
+```
+
+## Getting Started
+
+To run a Stata command from R, use the `stata_run` function.
+This also accepts a vector of commands.
+
+```{r stata_run}
+library(statable)
+
+stata_run("sysuse auto")
+stata_run(c("summarize", "regress price length weight"))
+```
+
+To pass data from R to Stata, you can use the function `stata_data_in`.
+Likewise, the function `stata_data_out` loads the current Stata dataset into R.
+
+```{r data}
+data("mtcars")
+
+stata_data_in(mtcars, clear = TRUE)
+stata_run("describe")
+
+stata_run("rename mpg miles_per_gallon")
+mtcars_stata <- stata_data_out()
+
+mean(mtcars_stata$miles_per_gallon)
+```
+
+More generally, you can use the Stata global macros of the form `$R_dataframe_name`.
+Behind the scenes, this exports the referenced data frame to a dta file and sets the value of the global to this path.
+This allows you to use data in R with a variety of Stata commands, such as `merge`, `joinby` or `append`.
+
+```{r macros}
+# statable sets the gloal R_mtcars to be equal to the path of a dta file
+# containing the data frame mtcars.
+stata_run("use $R_mtcars, clear")
+stata_run("display _N")
+
+stata_run("append using $R_mtcars")
+stata_run("display _N")
+```
+
+Note that R allows both variable names and column names to have dots in them but this is not allowed by Stata! You will have to rename them first.
+
+When running `stata_run`, `statable` starts a Stata *session* in the background.
+Unless overwise specified, all commands use this same session but it is possible to have multiple Stata sessions running at the same time.
+You can access the default session with `stata_default_session()`.
+
+```{r sessions}
+another_session <- stata_start_session()
+
+stata_run("sysuse lifeexp", session = another_session)
+stata_run("describe, simple", session = another_session)
+
+# Note that the data set loaded in the default session is different to the
+# data set in `another_session`.
+stata_run("describe, simple")
+
+stata_close_session(another_session)
+```
+
