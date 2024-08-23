@@ -4,10 +4,10 @@
 \alias{stata_start_session}
 \title{Start a new session of Stata running in batch mode}
 \usage{
-stata_start_session(stata_path = stata_path())
+stata_start_session(path = stata_path())
 }
 \arguments{
-\item{stata_path}{The path to the Stata executable}
+\item{path}{The path to the Stata executable}
 }
 \description{
 Start a new session of Stata running in batch mode

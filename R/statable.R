@@ -75,12 +75,12 @@ run_commands <- function(session, user_commands, pre_commands) {
 
 #' Start a new session of Stata running in batch mode
 #'
-#' @param stata_path The path to the Stata executable
+#' @param path The path to the Stata executable
 #'
 #' @export
-stata_start_session <- function(stata_path = stata_path()) {
+stata_start_session <- function(path = stata_path()) {
   session <- new.env(parent = emptyenv())
-  new_session(session, stata_path)
+  new_session(session, path)
 }
 
 #' Close a Stata session
