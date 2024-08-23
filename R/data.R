@@ -1,3 +1,37 @@
+#' Transfer data from R to Stata
+#'
+#' @param data_frame The data frame to be loaded in Stata
+#' @param clear Whether to replace the data set already in Stata
+#' @param session The Stata session to load the data set in
+#'
+#' @export
+stata_data_in <- function(data_frame, clear = FALSE, session = stata_default_session()) {
+  stopifnot(inherits(data_frame, "data.frame"))
+
+  if (clear) {
+    stata_run('use "$R_data_frame", clear', session = session)
+  } else {
+    stata_run('use "$R_data_frame"', session = session)
+  }
+}
+
+#' Transfer data from Stata to R
+#'
+#' @param session The Stata session to read the data set from
+#'
+#' @return A data.frame containing the current Stata data set
+#'
+#' @export
+stata_data_out <- function(session = stata_default_session()) {
+  dta_path <- tempfile("stata", fileext = ".dta", tmpdir = session$dir)
+
+  stata_run(sprintf('save "%s"', dta_path))
+
+  dta <- haven::read_dta(dta_path)
+  unlink(dta_path)
+  dta
+}
+
 # Search commands for globals of the form $R_variable_name.
 .extract_globals <- function(commands, data, dir) {
   stopifnot(typeof(commands) == "character")

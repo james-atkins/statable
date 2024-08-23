@@ -1,5 +1,5 @@
 test_that("can extract globals", {
-  env <- environment()
+  env <- rlang::new_environment()
 
   globals <- .extract_globals("describe", env, tempdir())
   expect_named(globals)
@@ -14,12 +14,25 @@ test_that("can extract globals", {
   expect_true(file.exists(globals["R_mtcars"]))
   expect_true(is.na(globals["R_mtcars2"]))
 
-  mtcars2 <- mtcars
+  env$mtcars2 <- env$mtcars
   globals <- .extract_globals(c("use $R_mtcars", "use $R_mtcars2"), env, tempdir())
   expect_named(globals)
   expect_length(globals, 2)
   expect_true(file.exists(globals["R_mtcars"]))
   expect_true(file.exists(globals["R_mtcars2"]))
+})
+
+test_that("can extract globals in parent environments", {
+  env_parent <- rlang::new_environment()
+  env <- rlang::new_environment(parent = env_parent)
+
+  data("mtcars", envir = env_parent)
+
+  globals <- .extract_globals("use $R_mtcars", env, tempdir())
+  expect_named(globals)
+  expect_length(globals, 1)
+
+  expect_true(file.exists(globals["R_mtcars"]))
 })
 
 test_that("error for invalid global names", {
