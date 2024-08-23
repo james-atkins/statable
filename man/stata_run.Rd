@@ -4,12 +4,14 @@
 \alias{stata_run}
 \title{Run a Stata command}
 \usage{
-stata_run(commands, session = stata_default_session())
+stata_run(commands, session = stata_default_session(), env = caller_env())
 }
 \arguments{
 \item{commands}{A vector of Stata commands to run}
 
 \item{session}{The Stata session to run the commands in}
+
+\item{env}{The R environment in which to look for data frames to transfer to Stata}
 }
 \description{
 Run a Stata command

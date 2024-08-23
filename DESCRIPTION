@@ -16,5 +16,6 @@ Suggests:
 Config/testthat/edition: 3
 Imports: 
     haven,
-    processx
+    processx,
+    rlang
 RoxygenNote: 7.3.2

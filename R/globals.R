@@ -1,7 +1,6 @@
 # Search commands for globals of the form $R_variable_name.
 .extract_globals <- function(commands, data, dir) {
   stopifnot(typeof(commands) == "character")
-  data = as.list(data)
 
   # Get the R data frames referenced by the Stata globals.
   # Note dots are valid in R variable names but are not valid in Stata.
@@ -19,8 +18,7 @@
     stop("Stata global macro names cannot be longer than 32 characters")
   }
 
-  # Error if Stata references non-existent R data frames
-  missing_data_frames <- data_frame_names[!data_frame_names %in% names(data)]
+  missing_data_frames <- data_frame_names[!env_has(data, data_frame_names, inherit = TRUE)]
   if (length(missing_data_frames) > 0) {
     stop(sprintf("Cannot find data frames: %s", paste0(missing_data_frames, collapse = ", ")))
   }
@@ -28,7 +26,7 @@
   mapply(
     function(global_name, data_frame_name) {
       dta_path <- tempfile(data_frame_name, fileext = ".dta", tmpdir = dir)
-      haven::write_dta(data[[data_frame_name]], dta_path)
+      haven::write_dta(env_get(data, data_frame_name, inherit = TRUE), dta_path)
       dta_path
     },
     global_names, data_frame_names,

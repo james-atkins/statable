@@ -20,11 +20,12 @@ stata_path <- function(path = NULL) {
 #'
 #' @param commands A vector of Stata commands to run
 #' @param session The Stata session to run the commands in
+#' @param env The R environment in which to look for data frames to transfer to Stata
 #'
 #' @export
-stata_run <- function(commands, session = stata_default_session()) {
+stata_run <- function(commands, session = stata_default_session(), env = caller_env()) {
   # Parse commands for any global macros
-  globals <- .extract_globals(commands, parent.frame(), session$dir)
+  globals <- .extract_globals(commands, env, session$dir)
   set_globals <- sprintf('global %s "%s"', names(globals), globals)
 
   # Send commands to Stata
