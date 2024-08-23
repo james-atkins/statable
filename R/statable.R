@@ -1,3 +1,7 @@
+.onLoad <- function(libname, pkgname) {
+  knitr::knit_engines$set(stata = engine_stata)
+}
+
 #' Get or set the path to the Stata executable
 #'
 #' @param path The path to the Stata executable
