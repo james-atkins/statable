@@ -6,8 +6,13 @@
 <!-- badges: start -->
 <!-- badges: end -->
 
-An R to Stata interface that allows Stata commands to be executed from
-R.
+statable is a Stata interface for R that enables executing Stata
+commands directly from R. It provides the following functionalities:
+
+- Execute Stata commands from R
+- Transfer data frames between R and Stata seamlessly
+- Integrate Stata “chunks” into knitr or R Markdown documents
+- Run multiple Stata sessions at the same time
 
 ## Installation
 
@@ -79,10 +84,10 @@ stata_data_in(mtcars, clear = TRUE)
 stata_run("describe")
 #> . describe
 #> 
-#> Contains data from /tmp/RtmpkjBUBc/statable4cdf32d14e85/data_frame4cdf59d112a.d
-#> > ta
+#> Contains data from /tmp/RtmppX45Ji/statable1843655686f85/data_frame184365b4fe3c
+#> > 6.dta
 #>   obs:            32                          
-#>  vars:            11                          23 Aug 2024 14:41
+#>  vars:            11                          23 Aug 2024 16:00
 #> -------------------------------------------------------------------------------
 #>               storage   display    value
 #> variable name   type    format     label      variable label
@@ -104,8 +109,8 @@ stata_run("describe")
 stata_run("rename mpg miles_per_gallon")
 #> . rename mpg miles_per_gallon
 mtcars_stata <- stata_data_out()
-#> . save "/tmp/RtmpkjBUBc/statable4cdf32d14e85/stata4cdf6aa86ee.dta"
-#> file /tmp/RtmpkjBUBc/statable4cdf32d14e85/stata4cdf6aa86ee.dta saved
+#> . save "/tmp/RtmppX45Ji/statable1843655686f85/stata184363f8c4556.dta"
+#> file /tmp/RtmppX45Ji/statable1843655686f85/stata184363f8c4556.dta saved
 
 mean(mtcars_stata$miles_per_gallon)
 #> [1] 20.09062
@@ -161,3 +166,15 @@ stata_run("describe, simple")
 
 stata_close_session(another_session)
 ```
+
+`statable` integrates with knitr allowing you to run Stata code chunks
+in knitr or rmarkdown documents. To do so, you must first import the
+package with `library(statable)` so knitr knows what to do with `stata`
+chunks. Then add a chunk like the following.
+
+```` default
+```{stata}
+use $R_mtcars, clear
+summarize
+```
+````

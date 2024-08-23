@@ -18,7 +18,12 @@ knitr::opts_chunk$set(
 <!-- badges: start -->
 <!-- badges: end -->
 
-An R to Stata interface that allows Stata commands to be executed from R.
+statable is a Stata interface for R that enables executing Stata commands directly from R. It provides the following functionalities:
+
+* Execute Stata commands from R
+* Transfer data frames between R and Stata seamlessly
+* Integrate Stata "chunks" into knitr or R Markdown documents
+* Run multiple Stata sessions at the same time
 
 ## Installation
 
@@ -90,3 +95,13 @@ stata_run("describe, simple")
 stata_close_session(another_session)
 ```
 
+`statable` integrates with knitr allowing you to run Stata code chunks in knitr or rmarkdown documents.
+To do so, you must first import the package with `library(statable)` so knitr knows what to do with `stata` chunks.
+Then add a chunk like the following.
+
+````{verbatim}
+```{stata}
+use $R_mtcars, clear
+summarize
+```
+````
