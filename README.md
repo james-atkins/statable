@@ -1,37 +1,51 @@
 
 <!-- README.md is generated from README.Rmd. Please edit that file -->
 
-# statable - Run Stata commands from R
+# statable - Run Stata from R
 
 <!-- badges: start -->
 <!-- badges: end -->
 
-statable is a Stata interface for R that enables executing Stata
-commands directly from R. It provides the following functionalities:
+statable is an R interface to Stata that allows you to combine the
+strengths of both R and Stata into one seamless workflow. You can
+prepare and manipulate your data in R, then quickly switch to Stata to
+perform specialised analyses, all without leaving your R environment.
+This integration streamlines your work, saves time and reduces the need
+to manually transfer data between software.
 
-- Execute Stata commands from R
-- Transfer data frames between R and Stata seamlessly
-- Integrate Stata “chunks” into knitr or R Markdown documents
-- Run multiple Stata sessions at the same time
+statable provides the following functionality:
+
+- Run Stata commands from R
+- Transfer datasets between R and Stata
+- Run Stata “chunks” in knitr or R Markdown documents
+- Work with multiple Stata sessions at the same time
 
 ## Installation
 
 `statable` is not currently on CRAN. You can install the development
-version of statable from [GitHub](https://github.com/) with:
+version from [GitHub](https://github.com/james-atkins/statable) with:
 
 ``` r
 # install.packages("pak")
 pak::pak("james-atkins/statable")
 ```
 
-## Getting Started
+## Usage
 
-To run a Stata command from R, use the `stata_run` function. This also
-accepts a vector of commands.
+For more information, please read the
+[documentation](https://statable.jamesatkins.com).
 
 ``` r
+# First, load the package. All statable commands start with `stata_`.
 library(statable)
 
+# statable should find Stata automatically but, if necessary, you can
+# manually set the path to the Stata executable
+# stata_path("C:/Program Files/Stata18/StataSE-64.exe")
+
+# `stata_run()` runs Stata commands in the same session.
+# All your data and results stay in one place, allowing you to easily build on
+# your previous commands.
 stata_run("sysuse auto")
 #> . sysuse auto
 #> (1978 Automobile Data)
@@ -70,24 +84,18 @@ stata_run(c("summarize", "regress price length weight"))
 #>       weight |   4.699065   1.122339     4.19   0.000     2.461184    6.936946
 #>        _cons |   10386.54   4308.159     2.41   0.019     1796.316    18976.76
 #> ------------------------------------------------------------------------------
-```
 
-To pass data from R to Stata, you can use the function `stata_data_in`.
-Likewise, the function `stata_data_out` loads the current Stata dataset
-into R.
-
-``` r
+# To pass data from R to Stata, you can use the function `stata_data_in()`
 data("mtcars")
-
 stata_data_in(mtcars, clear = TRUE)
 #> . use "$R_data_frame", clear
 stata_run("describe")
 #> . describe
 #> 
-#> Contains data from /tmp/RtmppX45Ji/statable1843655686f85/data_frame184365b4fe3c
-#> > 6.dta
+#> Contains data from /tmp/RtmpbSZnLo/statableab3f8474947a6/data_frameab3f833a5346
+#> > 9.dta
 #>   obs:            32                          
-#>  vars:            11                          23 Aug 2024 16:00
+#>  vars:            11                          24 Aug 2024 12:48
 #> -------------------------------------------------------------------------------
 #>               storage   display    value
 #> variable name   type    format     label      variable label
@@ -106,31 +114,39 @@ stata_run("describe")
 #> -------------------------------------------------------------------------------
 #> Sorted by:
 
+# Likewise, `stata_data_out()` returns the current Stata dataset into R
 stata_run("rename mpg miles_per_gallon")
 #> . rename mpg miles_per_gallon
 mtcars_stata <- stata_data_out()
-#> . save "/tmp/RtmppX45Ji/statable1843655686f85/stata184363f8c4556.dta"
-#> file /tmp/RtmppX45Ji/statable1843655686f85/stata184363f8c4556.dta saved
-
+#> . save "/tmp/RtmpbSZnLo/statableab3f8474947a6/stataab3f87a311d3a.dta"
+#> file /tmp/RtmpbSZnLo/statableab3f8474947a6/stataab3f87a311d3a.dta saved
 mean(mtcars_stata$miles_per_gallon)
 #> [1] 20.09062
-```
 
-More generally, you can use the Stata global macros of the form
-`$R_dataframe_name`. Behind the scenes, this exports the referenced data
-frame to a dta file and sets the value of the global to this path. This
-allows you to use data in R with a variety of Stata commands, such as
-`merge`, `joinby` or `append`.
-
-``` r
-# statable sets the gloal R_mtcars to be equal to the path of a dta file
-# containing the data frame mtcars.
+# You can also reference R data frames using Stata globals of the form
+# `$R_dataframe_name`.
+# This allows you to use data in R with a variety of Stata commands, such as
+# `merge`, `joinby` or `append`.
 stata_run("use $R_mtcars, clear")
 #> . use $R_mtcars, clear
-stata_run("display _N")
-#> . display _N
-#> 32
-
+stata_run("summarize")
+#> . summarize
+#> 
+#>     Variable |        Obs        Mean    Std. Dev.       Min        Max
+#> -------------+---------------------------------------------------------
+#>          mpg |         32    20.09062    6.026948       10.4       33.9
+#>          cyl |         32      6.1875    1.785922          4          8
+#>         disp |         32    230.7219    123.9387       71.1        472
+#>           hp |         32    146.6875    68.56287         52        335
+#>         drat |         32    3.596563    .5346787       2.76       4.93
+#> -------------+---------------------------------------------------------
+#>           wt |         32     3.21725    .9784574      1.513      5.424
+#>         qsec |         32    17.84875    1.786943       14.5       22.9
+#>           vs |         32       .4375    .5040161          0          1
+#>           am |         32      .40625    .4989909          0          1
+#>         gear |         32      3.6875    .7378041          3          5
+#> -------------+---------------------------------------------------------
+#>         carb |         32      2.8125      1.6152          1          8
 stata_run("append using $R_mtcars")
 #> . append using $R_mtcars
 stata_run("display _N")
@@ -138,34 +154,7 @@ stata_run("display _N")
 #> 64
 ```
 
-Note that R allows both variable names and column names to have dots in
-them but this is not allowed by Stata! You will have to rename them
-first.
-
-When running `stata_run`, `statable` starts a Stata *session* in the
-background. Unless overwise specified, all commands use this same
-session but it is possible to have multiple Stata sessions running at
-the same time. You can access the default session with
-`stata_default_session()`.
-
-``` r
-another_session <- stata_start_session()
-
-stata_run("sysuse lifeexp", session = another_session)
-#> . sysuse lifeexp
-#> (Life expectancy, 1998)
-stata_run("describe, simple", session = another_session)
-#> . describe, simple
-#> region     country    popgrowth  lexp       gnppc      safewater
-
-# Note that the data set loaded in the default session is different to the
-# data set in `another_session`.
-stata_run("describe, simple")
-#> . describe, simple
-#> mpg   cyl   disp  hp    drat  wt    qsec  vs    am    gear  carb
-
-stata_close_session(another_session)
-```
+## knitr
 
 `statable` integrates with knitr allowing you to run Stata code chunks
 in knitr or rmarkdown documents. To do so, you must first import the

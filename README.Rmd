@@ -13,87 +13,71 @@ knitr::opts_chunk$set(
 )
 ```
 
-# statable -  Run Stata commands from R
+# statable -  Run Stata from R
 
 <!-- badges: start -->
 <!-- badges: end -->
 
-statable is a Stata interface for R that enables executing Stata commands directly from R. It provides the following functionalities:
+statable is an R interface to Stata that allows you to combine the strengths of both R and Stata into one seamless workflow.
+You can prepare and manipulate your data in R, then quickly switch to Stata to perform specialised analyses, all without leaving your R environment.
+This integration streamlines your work, saves time and reduces the need to manually transfer data between software.
 
-* Execute Stata commands from R
-* Transfer data frames between R and Stata seamlessly
-* Integrate Stata "chunks" into knitr or R Markdown documents
-* Run multiple Stata sessions at the same time
+statable provides the following functionality:
+
+* Run Stata commands from R
+* Transfer datasets between R and Stata
+* Run Stata "chunks" in knitr or R Markdown documents
+* Work with multiple Stata sessions at the same time
 
 ## Installation
 
 `statable` is not currently on CRAN.
-You can install the development version of statable from [GitHub](https://github.com/) with:
+You can install the development version from [GitHub](https://github.com/james-atkins/statable) with:
 
 ``` r
 # install.packages("pak")
 pak::pak("james-atkins/statable")
 ```
 
-## Getting Started
+## Usage
 
-To run a Stata command from R, use the `stata_run` function.
-This also accepts a vector of commands.
+For more information, please read the [documentation](https://statable.jamesatkins.com).
 
-```{r stata_run}
+```{r usage}
+# First, load the package. All statable commands start with `stata_`.
 library(statable)
 
+# statable should find Stata automatically but, if necessary, you can
+# manually set the path to the Stata executable
+# stata_path("C:/Program Files/Stata18/StataSE-64.exe")
+
+# `stata_run()` runs Stata commands in the same session.
+# All your data and results stay in one place, allowing you to easily build on
+# your previous commands.
 stata_run("sysuse auto")
 stata_run(c("summarize", "regress price length weight"))
-```
 
-To pass data from R to Stata, you can use the function `stata_data_in`.
-Likewise, the function `stata_data_out` loads the current Stata dataset into R.
-
-```{r data}
+# To pass data from R to Stata, you can use the function `stata_data_in()`
 data("mtcars")
-
 stata_data_in(mtcars, clear = TRUE)
 stata_run("describe")
 
+# Likewise, `stata_data_out()` returns the current Stata dataset into R
 stata_run("rename mpg miles_per_gallon")
 mtcars_stata <- stata_data_out()
-
 mean(mtcars_stata$miles_per_gallon)
-```
 
-More generally, you can use the Stata global macros of the form `$R_dataframe_name`.
-Behind the scenes, this exports the referenced data frame to a dta file and sets the value of the global to this path.
-This allows you to use data in R with a variety of Stata commands, such as `merge`, `joinby` or `append`.
-
-```{r macros}
-# statable sets the gloal R_mtcars to be equal to the path of a dta file
-# containing the data frame mtcars.
+# You can also reference R data frames using Stata globals of the form
+# `$R_dataframe_name`.
+# This allows you to use data in R with a variety of Stata commands, such as
+# `merge`, `joinby` or `append`.
 stata_run("use $R_mtcars, clear")
-stata_run("display _N")
-
+stata_run("summarize")
 stata_run("append using $R_mtcars")
 stata_run("display _N")
 ```
 
-Note that R allows both variable names and column names to have dots in them but this is not allowed by Stata! You will have to rename them first.
-
-When running `stata_run`, `statable` starts a Stata *session* in the background.
-Unless overwise specified, all commands use this same session but it is possible to have multiple Stata sessions running at the same time.
-You can access the default session with `stata_default_session()`.
-
-```{r sessions}
-another_session <- stata_start_session()
-
-stata_run("sysuse lifeexp", session = another_session)
-stata_run("describe, simple", session = another_session)
-
-# Note that the data set loaded in the default session is different to the
-# data set in `another_session`.
-stata_run("describe, simple")
-
-stata_close_session(another_session)
-```
+## knitr
 
 `statable` integrates with knitr allowing you to run Stata code chunks in knitr or rmarkdown documents.
 To do so, you must first import the package with `library(statable)` so knitr knows what to do with `stata` chunks.

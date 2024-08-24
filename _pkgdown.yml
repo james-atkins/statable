@@ -1,0 +1,33 @@
+url: https://statable.jamesatkins.com
+
+template:
+  bootstrap: 5
+  bslib:
+    primary: "#485fc7"
+    code_font: {google: "Source Code Pro"}
+    font_scale: 1.2
+    fg: "#172431"
+    bg: "#f9f9f9"
+    border-radius: 0
+    grid-gutter-width: 3rem
+
+authors:
+  James Atkins:
+    href: https://www.jamesatkins.com
+
+reference:
+- title: "Commands"
+  contents:
+  - stata_run
+  - stata_path
+- title: "Transfer Data between R and Stata"
+  contents:
+  - stata_data_in
+  - stata_data_out
+- title: "Sessions"
+  contents:
+  - stata_start_session
+  - stata_close_session
+  - stata_default_session
+
+

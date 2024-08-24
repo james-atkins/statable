@@ -1,0 +1,107 @@
+---
+title: "Introduction to statable"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Introduction to statable}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+The aim of statable is to enable you to combine the strengths of both R and Stata into one seamless workflow.
+This document introduces you to statable’s basic functionality.
+
+To start using statable, you must first load the package.
+
+```{r setup}
+library(statable)
+```
+
+<i class="fa fa-info-circle" style="color: #007bff;"></i> **Note: ** All statable functions start with the prefix `stata_`.
+
+# Finding Stata
+
+In order to run, statable needs the path to your Stata executable.
+It should find this path automatically, but if it cannot you can specify it using `stata_path()`.
+This function may also be useful if you have multiple versions of Stata installed and want to run an older version.
+
+```{r stata_find, eval=FALSE}
+# For example on Windows
+stata_path("C:/Program Files/Stata18/StataSE-64.exe")
+
+# or on Mac
+stata_path("/Applications/Stata/StataSE.app/Contents/MacOS/stata-se")
+
+# or on Linux
+stata_path("/opt/stata18/stata-mp")
+```
+
+# Running Commands
+
+To run a Stata command from R, simply use the `stata_run()` function.
+You can pass a single Stata command to this function or a vector of commands.
+
+```{r stata_run}
+stata_run("sysuse auto")
+stata_run(c("summarize", "regress price length weight"))
+```
+
+See how the second set of commands used the `auto` dataset that we loaded with the first command.
+This works because, by default, `stata_run()` uses the same Stata session every time you run a command.
+This means all your data and results stay in one place, allowing you to easily build on your previous commands.
+If needed, you can also run multiple Stata sessions at the same time but most users can use statable without worrying about session management.
+
+# Transferring Data
+
+## Functions
+
+statable makes it is easy to transfer datasets between R and Stata.
+This is useful when you want to use Stata’s powerful statistical capabilities on data that you initially cleaned and tidied in R.
+
+To pass data from R to Stata, use the function `stata_data_in()`.
+This function takes an R data frame and sends it to the Stata session that you are working with.
+Behind the scenes, `stata_data_in()` exports the R data frame to a `.dta` file using the `haven::write_dta` function.
+
+Similarly, if you have been working with a dataset in Stata and want to bring that data back into R, use the function `stata_data_out()`.
+This function retrieves the current dataset from the active Stata session and returns it as a data frame.
+
+```{r data}
+data("mtcars")
+
+stata_data_in(mtcars, clear = TRUE)
+stata_run("summarize")
+
+stata_run("rename mpg miles_per_gallon")
+mtcars_stata <- stata_data_out()
+
+mean(mtcars_stata$miles_per_gallon)
+```
+
+## Magic Macros
+
+In addition to these direct data transfer functions, statable provides a more general way to work with data between R and Stata using global macros.
+In Stata, global macros of the form `$R_dataframe_name` are used to reference R data frames.
+When you create a global macro in this format, statable automatically exports the specified R data frame to a `.dta` file, which is the file format used by Stata for datasets.
+The value of the global macro is then set to the path of this `.dta` file.
+
+This functionality allows you to seamlessly use R data frames with a variety of Stata commands that require a path to a dataset, such as `merge`, `joinby`, or `append`.
+For example, in the following code, `$R_mtcars` references the R data frame called `mtcars` in Stata, allowing you to `use` it and then `append` it.
+
+```{r macros}
+# statable sets the gloal R_mtcars to be equal to the path of a dta file
+# containing the data frame mtcars.
+stata_run("use $R_mtcars, clear")
+stata_run("summarize")
+stata_run("display _N")
+
+stata_run("append using $R_mtcars")
+stata_run("display _N")
+```
+
+<i class="fa fa-info-circle" style="color: #007bff;"></i> **Note: ** R allows both variable names and column names to have dots in them but this is **not** allowed by Stata. You will have to rename them first.
