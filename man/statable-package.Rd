@@ -11,6 +11,7 @@ An R to Stata interface that allows Stata commands to be executed from within R.
 \seealso{
 Useful links:
 \itemize{
+  \item \url{https://statable.jamesatkins.com}
   \item \url{https://github.com/james-atkins/statable}
   \item Report bugs at \url{https://github.com/james-atkins/statable/issues}
 }
