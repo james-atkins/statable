@@ -7,16 +7,44 @@
 #' @param path The path to the Stata executable
 #'
 #' @export
-stata_path <- function(path = NULL) {
-  if (is.null(path)) {
+stata_path <- function(path = rlang::missing_arg()) {
+  if (rlang::is_missing(path)) {
     path <- getOption("statable.path")
-    if (!is.null(path)) {
-      path
-    } else {
-      find_stata()
+
+    if (is.null(path)) {
+      # Try and look for Stata
+      path <- find_stata()
+
+      if (length(path) == 0) {
+        cli_abort(c(
+          x = "Cannot find a Stata executable.",
+          i = "Use {.fun statable::stata_path} to set the path to a Stata executable."
+        ))
+      }
     }
+
+    path
   } else {
+    if (is.null(path)) {
+      # Clear the options
+      options(statable.path = NULL)
+      return()
+    }
+
+    if (length(path) != 1) {
+      cli_abort(c(x = "{.var path} must have length 1, not length {length(path)}."))
+    }
+
+    if (!is.character(path)) {
+      cli_abort(c(x = "{.var path} must be a string, not {.val {typeof(path)}}."))
+    }
+
+    if (!file.exists(path)) {
+      cli_abort(c(x = "{.var path} must exist: cannot find {.file {path}}."))
+    }
+
     options(statable.path = path)
+    cli_inform(c(v = "Setting default Stata path"))
   }
 }
 
@@ -118,11 +146,31 @@ stata_default_session <- function() {
 .stata <- new.env(parent = emptyenv())
 
 new_session <- function(session, stata_path) {
+  if (!is.character(stata_path)) {
+    cli_abort(c(x = "{.var stata_path} must be a string, not {.val {typeof(stata_path)}}."))
+  }
+
+  if (length(stata_path) == 0) {
+    cli_abort(c(x = "{.var stata_path} must not be empty."))
+  }
+
+  stata_path <- stata_path[1]
+
+  if (!file.exists(stata_path)) {
+    cli_abort(c(x = "{.var stata_path} must exist: cannot find {.file {stata_path}}."))
+  }
+
   if (.Platform$OS.type == "unix") {
     new_session_named_pipe(session, stata_path)
   } else if (.Platform$OS.type == "windows") {
     new_session_polling(session, stata_path)
   } else {
-    stop("Stata is not supported on this platform")
+    cli_abort(c(
+      x = "Stata is not supported on this platform.",
+      i = "Run statable on Linux, Windows or macOS."
+    ))
   }
+
+  cli_inform(c(i = "Started Stata session: {.path {stata_path}}"))
+  session
 }

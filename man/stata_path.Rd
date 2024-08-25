@@ -4,7 +4,7 @@
 \alias{stata_path}
 \title{Get or set the path to the Stata executable}
 \usage{
-stata_path(path = NULL)
+stata_path(path = rlang::missing_arg())
 }
 \arguments{
 \item{path}{The path to the Stata executable}
