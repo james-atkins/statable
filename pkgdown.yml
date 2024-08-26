@@ -1,0 +1,9 @@
+pandoc: 3.1.11
+pkgdown: 2.1.0
+pkgdown_sha: ~
+articles:
+  statable: statable.html
+last_built: 2024-08-26T19:23Z
+urls:
+  reference: https://statable.jamesatkins.com/reference
+  article: https://statable.jamesatkins.com/articles
