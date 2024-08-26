@@ -12,6 +12,13 @@ knitr::opts_chunk$set(
   collapse = TRUE,
   comment = "#>"
 )
+
+tryCatch(
+  stata_path(),
+  error = function(cnd) {
+    knitr::opts_chunk$set(eval = FALSE)
+  }
+)
 ```
 
 The aim of statable is to enable you to combine the strengths of both R and Stata into one seamless workflow.
