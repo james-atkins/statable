@@ -18,9 +18,8 @@ knitr::opts_chunk$set(
 <!-- badges: start -->
 <!-- badges: end -->
 
-statable is an R interface to Stata that allows you to combine the strengths of both R and Stata into one seamless workflow.
+statable is an R interface to Stata that lets you to combine the strengths of both R and Stata.
 You can prepare and manipulate your data in R, then quickly switch to Stata to perform specialised analyses, all without leaving your R environment.
-This integration streamlines your work, saves time and reduces the need to manually transfer data between software.
 
 statable provides the following functionality:
 
@@ -41,7 +40,7 @@ pak::pak("james-atkins/statable")
 
 ## Usage
 
-For more information, please read the [documentation](https://statable.jamesatkins.com).
+For more information, please read the [Getting Started guide](https://statable.jamesatkins.com/articles/statable.html).
 
 ```{r usage}
 # First, load the package. All statable commands start with `stata_`.

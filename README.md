@@ -6,12 +6,10 @@
 <!-- badges: start -->
 <!-- badges: end -->
 
-statable is an R interface to Stata that allows you to combine the
-strengths of both R and Stata into one seamless workflow. You can
-prepare and manipulate your data in R, then quickly switch to Stata to
-perform specialised analyses, all without leaving your R environment.
-This integration streamlines your work, saves time and reduces the need
-to manually transfer data between software.
+statable is an R interface to Stata that lets you to combine the
+strengths of both R and Stata. You can prepare and manipulate your data
+in R, then quickly switch to Stata to perform specialised analyses, all
+without leaving your R environment.
 
 statable provides the following functionality:
 
@@ -32,8 +30,8 @@ pak::pak("james-atkins/statable")
 
 ## Usage
 
-For more information, please read the
-[documentation](https://statable.jamesatkins.com).
+For more information, please read the [Getting Started
+guide](https://statable.jamesatkins.com/articles/statable.html).
 
 ``` r
 # First, load the package. All statable commands start with `stata_`.
@@ -47,6 +45,8 @@ library(statable)
 # All your data and results stay in one place, allowing you to easily build on
 # your previous commands.
 stata_run("sysuse auto")
+#> ℹ Started Stata session:
+#>   '/nix/store/hk6h0ak3ym85b771n6kvk1hcmh4b7rjv-user-environment/bin/stata-se'
 #> . sysuse auto
 #> (1978 Automobile Data)
 stata_run(c("summarize", "regress price length weight"))
@@ -92,10 +92,10 @@ stata_data_in(mtcars, clear = TRUE)
 stata_run("describe")
 #> . describe
 #> 
-#> Contains data from /tmp/RtmpbSZnLo/statableab3f8474947a6/data_frameab3f833a5346
-#> > 9.dta
+#> Contains data from /tmp/Rtmp43oq7Y/statable132588723cb8a5/data_frame13258872ed1
+#> > 4a8.dta
 #>   obs:            32                          
-#>  vars:            11                          24 Aug 2024 12:48
+#>  vars:            11                          02 Sep 2024 18:08
 #> -------------------------------------------------------------------------------
 #>               storage   display    value
 #> variable name   type    format     label      variable label
@@ -118,8 +118,8 @@ stata_run("describe")
 stata_run("rename mpg miles_per_gallon")
 #> . rename mpg miles_per_gallon
 mtcars_stata <- stata_data_out()
-#> . save "/tmp/RtmpbSZnLo/statableab3f8474947a6/stataab3f87a311d3a.dta"
-#> file /tmp/RtmpbSZnLo/statableab3f8474947a6/stataab3f87a311d3a.dta saved
+#> . save "/tmp/Rtmp43oq7Y/statable132588723cb8a5/stata1325882c7c2af9.dta"
+#> file /tmp/Rtmp43oq7Y/statable132588723cb8a5/stata1325882c7c2af9.dta saved
 mean(mtcars_stata$miles_per_gallon)
 #> [1] 20.09062
 
