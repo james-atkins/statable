@@ -1,0 +1,19 @@
+on:
+  push:
+  pull_request:
+    branches: [main, master]
+
+name: check-stata.yaml
+
+permissions: read-all
+
+jobs:
+  check-stata:
+    runs-on: stata
+
+    env:
+      GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
+
+    steps:
+    - uses: actions/checkout@v4
+    - uses: r-lib/actions/check-r-package@v2
