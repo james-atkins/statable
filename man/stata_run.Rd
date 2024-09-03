@@ -4,7 +4,7 @@
 \alias{stata_run}
 \title{Run a Stata command}
 \usage{
-stata_run(commands, session = stata_default_session(), env = caller_env())
+stata_run(commands, session = stata_default_session(), env = parent.frame())
 }
 \arguments{
 \item{commands}{A vector of Stata commands to run}
