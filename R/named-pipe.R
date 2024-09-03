@@ -5,11 +5,11 @@ new_session_named_pipe <- function(session, stata_path) {
   dir <- tempfile("statable")
   dir.create(dir)
 
-  do_path <- tempfile(pattern = "statable", fileext = ".do", tmpdir = dir)
-  log_path <- stata_log_path(do_path)
+  pipe_path <- tempfile(pattern = "statable", fileext = ".do", tmpdir = dir)
+  log_path <- stata_log_path(pipe_path)
 
-  do_file <- processx::conn_create_fifo(do_path, write = TRUE)
-  process <- new_stata_batch_process(stata_path, do_path)
+  pipe <- processx::conn_create_fifo(pipe_path, write = TRUE)
+  process <- new_stata_batch_process(stata_path, pipe_path)
 
   while (!file.exists(log_path)) Sys.sleep(.LOG_POLL_SLEEP)
   log_file <- file(log_path, open = "r")
@@ -20,7 +20,7 @@ new_session_named_pipe <- function(session, stata_path) {
   session$closed <- FALSE
   session$dir <- dir
   session$process <- process
-  session$do_file <- do_file
+  session$pipe <- pipe
   session$log_file <- log_file
   session$log_path <- log_path
 
@@ -32,7 +32,7 @@ close_session.stata_named_pipe <- function(session = stata_default_session()) {
   stopifnot(inherits(session, "stata_named_pipe"))
 
   if (!session$closed) {
-    processx::processx_conn_close(session$do_file)
+    processx::processx_conn_close(session$pipe)
 
     close(session$log_file)
     unlink(session$log_path)
@@ -49,16 +49,26 @@ close_session.stata_named_pipe <- function(session = stata_default_session()) {
 
 #' @export
 run_commands.stata_named_pipe <- function(session, user_commands, pre_commands) {
-  processx::conn_write(
-    session$do_file,
+  do_file_path <- tempfile("input", fileext = ".do", tmpdir = session$dir)
+  do_file <- file(do_file_path, open = "wt")
+
+  writeLines(
     c(
       pre_commands,
       "capture noisily {",
       START_COMMANDS,
       user_commands,
       END_COMMANDS,
-      "}"
-    )
+      "}",
+      # Clean up after ourselves
+      sprintf('rm "%s"', do_file_path)
+    ),
+    do_file
   )
-  processx::conn_write(session$do_file, "\n")
+  close(do_file)
+
+  processx::conn_write(
+    session$pipe,
+    sprintf('do "%s"\n', do_file_path)
+  )
 }
