@@ -14,7 +14,7 @@ knitr::opts_chunk$set(
 )
 
 tryCatch(
-  stata_path(),
+  statable::stata_path(),
   error = function(cnd) {
     knitr::opts_chunk$set(eval = FALSE)
   }
