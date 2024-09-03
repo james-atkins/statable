@@ -22,6 +22,7 @@ new_session_named_pipe <- function(session, stata_path) {
   session$process <- process
   session$do_file <- do_file
   session$log_file <- log_file
+  session$log_path <- log_path
 
   session
 }
@@ -33,9 +34,8 @@ close_session.stata_named_pipe <- function(session = stata_default_session()) {
   if (!session$closed) {
     processx::processx_conn_close(session$do_file)
 
-    log_file_path <- summary(session$log_file)$description
     close(session$log_file)
-    unlink(log_file_path)
+    unlink(session$log_path)
 
     if (!session$process$is_alive()) {
       session$process$kill()

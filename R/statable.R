@@ -70,7 +70,10 @@ stata_run <- function(commands, session = stata_default_session(), env = caller_
 
   while (!found_end) {
     if (!session$process$is_alive()) {
-      stop("Stata process has died")
+      cli_abort(c(
+        x = "Stata process has died.",
+        i = "Please file a {.href [GitHub issue](https://github.com/james-atkins/statable/issues)} and upload this log file: {.file {session$log_path}}."
+      ))
     }
 
     lines <- readLines(session$log_file)

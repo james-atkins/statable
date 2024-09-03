@@ -30,6 +30,7 @@ new_session_polling <- function(session, stata_path) {
   session$dir <- dir
   session$run_file_path <- run_file_path
   session$log_file <- log_file
+  session$log_path <- log_path
   session$input_file_path <- input_file_path
 
   session
@@ -40,9 +41,8 @@ close_session.stata_polling <- function(session) {
   if (!session$closed) {
     unlink(session$run_file_path)
 
-    log_file_path <- summary(session$log_file)$description
     close(session$log_file)
-    unlink(log_file_path)
+    unlink(session$log_path)
 
     # TODO: wait for Stata to gracefully exit
 
