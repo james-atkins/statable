@@ -136,7 +136,7 @@ close_session <- function(session) {
 #'
 #' @export
 stata_default_session <- function() {
-  if (!inherits(.stata, "stata")) {
+  if (!inherits(.stata, "stata") || .stata$closed) {
     new_session(.stata, stata_path())
   }
 
