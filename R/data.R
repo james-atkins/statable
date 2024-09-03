@@ -25,7 +25,7 @@ stata_data_in <- function(data_frame, clear = FALSE, session = stata_default_ses
 stata_data_out <- function(session = stata_default_session()) {
   dta_path <- tempfile("stata", fileext = ".dta", tmpdir = session$dir)
 
-  stata_run(sprintf('save "%s"', dta_path))
+  stata_run(sprintf('save "%s"', dta_path), session = session)
 
   dta <- haven::read_dta(dta_path)
   unlink(dta_path)
