@@ -4,10 +4,17 @@
 \alias{stata_run}
 \title{Run a Stata command}
 \usage{
-stata_run(commands, session = stata_default_session(), env = parent.frame())
+stata_run(
+  commands,
+  ...,
+  session = stata_default_session(),
+  env = parent.frame()
+)
 }
 \arguments{
 \item{commands}{A vector of Stata commands to run}
+
+\item{...}{These dots are for future extensions and must be empty.}
 
 \item{session}{The Stata session to run the commands in}
 

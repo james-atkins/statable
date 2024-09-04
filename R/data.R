@@ -1,11 +1,13 @@
 #' Transfer data from R to Stata
 #'
 #' @param data_frame The data frame to be loaded in Stata
+#' @inheritParams rlang::args_dots_empty
 #' @param clear Whether to replace the data set already in Stata
 #' @param session The Stata session to load the data set in
 #'
 #' @export
-stata_data_in <- function(data_frame, clear = FALSE, session = stata_default_session()) {
+stata_data_in <- function(data_frame, ..., clear = FALSE, session = stata_default_session()) {
+  check_dots_empty()
   stopifnot(inherits(data_frame, "data.frame"))
 
   if (clear) {
@@ -17,12 +19,15 @@ stata_data_in <- function(data_frame, clear = FALSE, session = stata_default_ses
 
 #' Transfer data from Stata to R
 #'
+#' @inheritParams rlang::args_dots_empty
 #' @param session The Stata session to read the data set from
 #'
 #' @return A data.frame containing the current Stata data set
 #'
 #' @export
-stata_data_out <- function(session = stata_default_session()) {
+stata_data_out <- function(..., session = stata_default_session()) {
+  check_dots_empty()
+
   dta_path <- tempfile("stata", fileext = ".dta", tmpdir = session$dir)
 
   stata_run(sprintf('save "%s"', dta_path), session = session)

@@ -4,9 +4,11 @@
 \alias{stata_data_out}
 \title{Transfer data from Stata to R}
 \usage{
-stata_data_out(session = stata_default_session())
+stata_data_out(..., session = stata_default_session())
 }
 \arguments{
+\item{...}{These dots are for future extensions and must be empty.}
+
 \item{session}{The Stata session to read the data set from}
 }
 \value{

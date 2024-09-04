@@ -4,10 +4,17 @@
 \alias{stata_data_in}
 \title{Transfer data from R to Stata}
 \usage{
-stata_data_in(data_frame, clear = FALSE, session = stata_default_session())
+stata_data_in(
+  data_frame,
+  ...,
+  clear = FALSE,
+  session = stata_default_session()
+)
 }
 \arguments{
 \item{data_frame}{The data frame to be loaded in Stata}
+
+\item{...}{These dots are for future extensions and must be empty.}
 
 \item{clear}{Whether to replace the data set already in Stata}
 
