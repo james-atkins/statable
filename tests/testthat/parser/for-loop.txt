@@ -1,0 +1,32 @@
+INPUT
+
+foreach ///
+	very_long_variable_name of numlist 1/5 {
+	display "This is the number in the sequence: `very_long_variable_name'"
+}
+
+LOG
+
+. /* !!! statable: start of commands !!! */
+. foreach ///
+>         very_long_variable_name of numlis
+> t 1/5 {
+  2.         display "This is the number in
+>  the sequence: `very_long_variable_name'"
+  3. }
+This is the number in the sequence: 1
+This is the number in the sequence: 2
+This is the number in the sequence: 3
+This is the number in the sequence: 4
+This is the number in the sequence: 5
+. /* !!! statable: end of commands !!! */
+
+OUTPUT
+
+This is the number in the sequence: 1
+This is the number in the sequence: 2
+This is the number in the sequence: 3
+This is the number in the sequence: 4
+This is the number in the sequence: 5
+
+END

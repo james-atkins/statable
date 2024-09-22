@@ -1,0 +1,33 @@
+INPUT
+
+display "this is a very long command line this is a very long command line this is a very long command line this is a very long command line this is a very long command line this is a very long command line this is a very long command line this is a very long command line this is a very long command line this is a very long command line this is a very long command line"
+
+LOG
+
+. /* !!! statable: start of commands !!! */
+. display "this is a very long command line
+>  this is a very long command line this is
+>  a very long command line this is a very 
+> long command line this is a very long com
+> mand line this is a very long command lin
+> e this is a very long command line this i
+> s a very long command line this is a very
+>  long command line this is a very long co
+> mmand line this is a very long command li
+> ne"
+this is a very long command line this is a 
+> very long command line this is a very lon
+> g command line this is a very long comman
+> d line this is a very long command line t
+> his is a very long command line this is a
+>  very long command line this is a very lo
+> ng command line this is a very long comma
+> nd line this is a very long command line 
+> this is a very long command line
+. /* !!! statable: end of commands !!! */
+
+OUTPUT
+
+this is a very long command line this is a very long command line this is a very long command line this is a very long command line this is a very long command line this is a very long command line this is a very long command line this is a very long command line this is a very long command line this is a very long command line this is a very long command line
+
+END

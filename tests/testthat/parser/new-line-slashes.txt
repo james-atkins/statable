@@ -1,0 +1,18 @@
+INPUT
+
+sysuse ///
+	auto
+
+LOG
+
+. /* !!! statable: start of commands !!! */
+. sysuse ///
+>         auto
+(1978 Automobile Data)
+. /* !!! statable: end of commands !!! */
+
+OUTPUT
+
+(1978 Automobile Data)
+
+END

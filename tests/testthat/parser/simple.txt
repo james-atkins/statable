@@ -1,0 +1,17 @@
+INPUT
+
+version
+
+LOG
+
+. /* !!! statable: start of commands !!! */
+. version
+version 16.1
+. /* !!! statable: end of commands !!! */
+
+OUTPUT
+
+version 16.1
+
+END
+
