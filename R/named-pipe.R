@@ -12,7 +12,7 @@ new_session_named_pipe <- function(session, stata_path) {
   process <- new_stata_batch_process(stata_path, pipe_path)
 
   while (!file.exists(log_path)) Sys.sleep(.LOG_POLL_SLEEP)
-  log_file <- file(log_path, open = "r")
+  log_file <- file(log_path, open = "rt")
 
   class(session) <- c("stata_named_pipe", "stata")
   reg.finalizer(session, onexit = TRUE, close_session.stata_named_pipe)

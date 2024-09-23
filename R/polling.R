@@ -20,7 +20,7 @@ new_session_polling <- function(session, stata_path) {
   process <- new_stata_batch_process(stata_path, do_file_path, env)
 
   while (!file.exists(log_path)) Sys.sleep(.LOG_POLL_SLEEP)
-  log_file <- file(log_path, open = "r")
+  log_file <- file(log_path, open = "rt")
 
   class(session) <- c("stata_polling", "stata")
   reg.finalizer(session, onexit = TRUE, close_session.stata_polling)
