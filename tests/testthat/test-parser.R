@@ -38,6 +38,7 @@ test_that("parser test files run", {
   for (test_file in test_files) {
     test <- read_parser_test_file(test_file)
 
+    code <- 0L
     output <- stack("character")
 
     callback_input <- function(.input) {
@@ -54,8 +55,13 @@ test_that("parser test files run", {
       }
     }
 
-    parse_log(test$input, test$log, always_alive, callback_input, callback_output)
+    callback_error <- function(.code, message = NULL) {
+      code <<- .code
+    }
+
+    parse_log(test$input, test$log, always_alive, callback_input, callback_output, callback_error)
     expect_equal(output$data(), test$output)
+    expect_equal(code, 0L)
   }
 })
 

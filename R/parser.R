@@ -20,7 +20,8 @@ read_lines.connection <- function(x) {
 # callback_input is called when the complete Stata command has been parsed. It is
 # called with this command as a character vector, with each line an element.
 # callback_output is called for every line of the output.
-parse_log <- function(commands, log, is_alive, callback_input, callback_output) {
+# callback_error is called with the integer error code and an optional message.
+parse_log <- function(commands, log, is_alive, callback_input, callback_output, callback_error) {
   commands <- split_lines(commands)
 
   prev_line <- NULL
@@ -79,6 +80,17 @@ parse_log <- function(commands, log, is_alive, callback_input, callback_output) 
 
         commands <- commands[-(1:length(command))]
         current_input$clear()
+      }
+
+      # Any errors? This is currently implemented by searching for Stata's return code.
+      # It could be made more robust in the future by checking whether _rc != 0.
+      if ((m <- regexec("^r\\(([0-9]+)\\);", line)) != -1) {
+        code <- as.integer(regmatches(line, m)[[1]][[2]])
+        if (!is.null(prev_line)) {
+          callback_error(code)
+        } else {
+          callback_error(code, prev_line)
+        }
       }
 
       # Reading output or input?
