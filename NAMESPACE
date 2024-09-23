@@ -2,8 +2,8 @@
 
 S3method(close_session,stata_named_pipe)
 S3method(close_session,stata_polling)
-S3method(read_lines,character)
-S3method(read_lines,connection)
+S3method(line_iterator,character)
+S3method(line_iterator,connection)
 S3method(run_commands,stata_named_pipe)
 S3method(run_commands,stata_polling)
 export(stata_close_session)

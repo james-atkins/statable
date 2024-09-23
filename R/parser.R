@@ -2,20 +2,61 @@ split_lines <- function(x) {
   unlist(strsplit(x, "\r?\n"), recursive = FALSE, use.names = FALSE)
 }
 
-read_lines <- function(x) {
-  UseMethod("read_lines")
+line_iterator <- function(x) {
+  UseMethod("line_iterator", x)
 }
 
 #' @export
-read_lines.character <- function(x) {
-  split_lines(x)
+line_iterator.character <- function(x) {
+  .idx <- 0L
+  .lines <- split_lines(x)
+
+  object <- list(
+    iterate = function() {
+      .idx <<- .idx + 1L
+      .lines[.idx]
+    },
+
+    peek = function() {
+      .lines[.idx + 1L]
+    }
+  )
+
+  object
 }
 
 #' @export
-read_lines.connection <- function(x) {
-  readLines(x)
-}
+line_iterator.connection <- function(x) {
+  .idx <- 0L
+  .con <- x
 
+  if (!isOpen(.con)) {
+    open(.con, open = "rt")
+  }
+  .lines <- readLines(.con)
+
+  read_more_if_needed <- function() {
+    if (.idx >= length(.lines)) {
+      .lines <<- readLines(.con)
+      .idx <<- 0L
+    }
+  }
+
+  object <- list(
+    iterate = function() {
+      read_more_if_needed()
+      .idx <<- .idx + 1L
+      .lines[.idx]
+    },
+
+    peek = function() {
+      read_more_if_needed()
+      .lines[.idx + 1L]
+    }
+  )
+
+  object
+}
 
 # callback_input is called when the complete Stata command has been parsed. It is
 # called with this command as a character vector, with each line an element.
@@ -23,8 +64,8 @@ read_lines.connection <- function(x) {
 # callback_error is called with the integer error code and an optional message.
 parse_log <- function(commands, log, is_alive, callback_input, callback_output, callback_error) {
   commands <- split_lines(commands)
+  log_iter <- line_iterator(log)
 
-  prev_line <- NULL
   found_start <- FALSE
   found_end <- FALSE
 
@@ -45,70 +86,72 @@ parse_log <- function(commands, log, is_alive, callback_input, callback_output, 
       abort_bug("Stata process has died")
     }
 
-    lines <- read_lines(log)
-
-    for (line in lines) {
-      if (!found_start) {
-        found_start <- grepl(START_COMMANDS, line, fixed = TRUE)
-        next
-      }
-
-      found_end <- grepl(END_COMMANDS, line, fixed = TRUE)
-      if (found_end) {
-        break
-      }
-
-      if (reading_input()) {
-        # The previous line was input. Is the current line still input?
-
-        # If the line starts with an angle bracket (new line) or number dot
-        # (loop) then the input is continued.
-        if ((m <- regexpr("^> ", line)) != -1) {
-          command <- regmatches(line, m, invert = TRUE)[[1]][[2]]
-          push_input(command, "continued")
-          next
-        }
-        if ((m <- regexpr("^\\s*\\d*\\. ", line)) != -1) {
-          command <- regmatches(line, m, invert = TRUE)[[1]][[2]]
-          push_input(command, "loop")
-          next
-        }
-
-        # No new line or loop so assume that this is output.
-        command <- match_inputs_with_commands(commands, current_input$data())
-        callback_input(command)
-
-        commands <- commands[-(1:length(command))]
-        current_input$clear()
-      }
-
-      # Any errors? This is currently implemented by searching for Stata's return code.
-      # It could be made more robust in the future by checking whether _rc != 0.
-      if ((m <- regexec("^r\\(([0-9]+)\\);", line)) != -1) {
-        code <- as.integer(regmatches(line, m)[[1]][[2]])
-        if (!is.null(prev_line)) {
-          callback_error(code)
-        } else {
-          callback_error(code, prev_line)
-        }
-      }
-
-      # Reading output or input?
-      if ((m <- regexpr("^\\.\\s*", line)) != -1) {
-        command <- regmatches(line, m, invert = TRUE)[[1]][[2]]
-        push_input(command)
-        next
-      }
-
-      # New line?
-      if ((m <- regexpr("^> ", line)) != -1) {
-        log <- regmatches(line, m, invert = TRUE)[[1]][[2]]
-        callback_output(log, continued = TRUE)
-        next
-      }
-
-      callback_output(line)
+    line <- log_iter$iterate()
+    if (is.na(line)) {
+      Sys.sleep(1/10)  # TODO: organise polling times
+      next
     }
+
+    if (!found_start) {
+      found_start <- grepl(START_COMMANDS, line, fixed = TRUE)
+      next
+    }
+
+    found_end <- grepl(END_COMMANDS, line, fixed = TRUE)
+    if (found_end) {
+      break
+    }
+
+    if (reading_input()) {
+      # The previous line was input. Is the current line still input?
+
+      # If the line starts with an angle bracket (new line) or number dot
+      # (loop) then the input is continued.
+      if ((m <- regexpr("^> ", line)) != -1) {
+        command <- regmatches(line, m, invert = TRUE)[[1]][[2]]
+        push_input(command, "continued")
+        next
+      }
+      if ((m <- regexpr("^\\s*\\d*\\. ", line)) != -1) {
+        command <- regmatches(line, m, invert = TRUE)[[1]][[2]]
+        push_input(command, "loop")
+        next
+      }
+
+      # No new line or loop so assume that this is output.
+      command <- match_inputs_with_commands(commands, current_input$data())
+      callback_input(command)
+
+      commands <- commands[-(1:length(command))]
+      current_input$clear()
+    }
+
+    # Any errors? This is currently implemented by searching for Stata's return code.
+    # It could be made more robust in the future by checking whether _rc != 0.
+    if ((m <- regexec("^r\\(([0-9]+)\\);", line)) != -1) {
+      code <- as.integer(regmatches(line, m)[[1]][[2]])
+      if (!is.null(prev_line)) {
+        callback_error(code)
+      } else {
+        callback_error(code, prev_line)
+      }
+    }
+
+    # Reading output or input?
+    if ((m <- regexpr("^\\.\\s*", line)) != -1) {
+      command <- regmatches(line, m, invert = TRUE)[[1]][[2]]
+      push_input(command)
+      next
+    }
+
+    # New line?
+    if ((m <- regexpr("^> ", line)) != -1) {
+      log <- regmatches(line, m, invert = TRUE)[[1]][[2]]
+      callback_output(log, continued = TRUE)
+      next
+    }
+
+    callback_output(line)
   }
 
   if (length(commands) != 0L) {
