@@ -45,14 +45,8 @@ test_that("parser test files run", {
       input <<- .input
     }
 
-    callback_output <- function(.output, continued = FALSE) {
-      if (continued) {
-        prev_line <- output$pop()
-        new_line <- paste0(prev_line, .output, collapse = "")
-        output$push(new_line)
-      } else {
-        output$push(.output)
-      }
+    callback_output <- function(.output) {
+      output$push(.output)
     }
 
     callback_error <- function(.code, message = NULL) {

@@ -81,6 +81,25 @@ parse_log <- function(commands, log, is_alive, callback_input, callback_output, 
     current_input$push(structure(line, type = type))
   }
 
+  current_output <- stack()
+
+  push_output <- function(line, next_line_is_overflow = FALSE) {
+    if (next_line_is_overflow) {
+      current_output$push(line)
+      return()
+    }
+
+    if (current_output$empty()) {
+      callback_output(line)
+      return()
+    }
+
+    current_output$push(line)
+    output <- paste0(current_output$data(), collapse = "")
+    current_output$clear()
+    callback_output(output)
+  }
+
   while (!found_end) {
     if (!is_alive()) {
       abort_bug("Stata process has died")
@@ -100,6 +119,14 @@ parse_log <- function(commands, log, is_alive, callback_input, callback_output, 
     found_end <- grepl(END_COMMANDS, line, fixed = TRUE)
     if (found_end) {
       break
+    }
+
+    # This needs to be after check for found_end else there is a risk of looping
+    # forever.
+    next_line <- log_iter$peek()
+    if (is.na(next_line)) {
+      Sys.sleep(1/10)  # TODO: organise polling times
+      next
     }
 
     if (reading_input()) {
@@ -144,14 +171,21 @@ parse_log <- function(commands, log, is_alive, callback_input, callback_output, 
       next
     }
 
-    # New line?
+    # We are reading output.
+
+    # Is this line an overflowed line?
     if ((m <- regexpr("^> ", line)) != -1) {
-      log <- regmatches(line, m, invert = TRUE)[[1]][[2]]
-      callback_output(log, continued = TRUE)
-      next
+      output <- regmatches(line, m, invert = TRUE)[[1]][[2]]
+    } else {
+      output <- line
     }
 
-    callback_output(line)
+    # Does this line overflow over to the next line?
+    if (grepl("^> ", next_line)) {
+      push_output(output, next_line_is_overflow = TRUE)
+    } else {
+      push_output(output)
+    }
   }
 
   if (length(commands) != 0L) {
