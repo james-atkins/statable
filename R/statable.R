@@ -66,46 +66,26 @@ stata_run <- function(commands, ..., session = stata_default_session(), env = pa
   # Send commands to Stata
   run_commands(session, commands, set_globals)
 
-  # Extract output from log file
-  prev_line <- NULL
-  found_start <- FALSE
-  found_end <- FALSE
-
-  while (!found_end) {
-    if (!session$process$is_alive()) {
-      cli_abort(c(
-        x = "Stata process has died.",
-        i = "Please file a {.href [GitHub issue](https://github.com/james-atkins/statable/issues)} and upload this log file: {.file {session$log_path}}."
-      ))
-    }
-
-    lines <- readLines(session$log_file)
-
-    for (line in lines) {
-      if (!found_start) {
-        found_start <- grepl(START_COMMANDS, line, fixed = TRUE)
-        next
-      }
-
-      found_end <- grepl(END_COMMANDS, line, fixed = TRUE)
-      if (found_end) {
-        break
-      }
-
-      # Any errors? This is currently implemented by searching for Stata's return code.
-      # It could be made more robust in the future by checking whether _rc != 0.
-      if (grepl("^r\\([0-9]+\\);", line)) {
-        if (!is.null(prev_line)) {
-          stop(prev_line, call. = TRUE)
-        } else {
-          stop("Stata error")
-        }
-      }
-
-      cat(line, sep = "\n")
-      prev_line <- line
-    }
+  callback_input <- function(input) {
+    cli_code(input, language = "stata")
   }
+
+  callback_output <- function(line) {
+    cli_verbatim(line)
+  }
+
+  callback_error <- function(code, message) {
+    cli_abort("Stata error {code}: {message}.", call = NULL)
+  }
+
+  parse_log(
+    commands,
+    session$log_file,
+    session$process$is_alive,
+    callback_input,
+    callback_output,
+    callback_error
+  )
 }
 
 run_commands <- function(session, user_commands, pre_commands) {
