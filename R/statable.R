@@ -59,12 +59,11 @@ stata_path <- function(path = rlang::missing_arg()) {
 stata_run <- function(commands, ..., session = stata_default_session(), env = parent.frame()) {
   check_dots_empty()
 
-  # Parse commands for any global macros
-  globals <- .extract_globals(commands, env, session$dir)
-  set_globals <- sprintf('global %s "%s"', names(globals), globals)
+  commands <- clean_commands(commands)
+  pre_commands <- make_pre_commands(session, commands, env)
 
   # Send commands to Stata
-  run_commands(session, commands, set_globals)
+  run_commands(session, commands, pre_commands)
 
   callback_input <- function(input) {
     cli_code(input, language = "stata")
@@ -86,6 +85,25 @@ stata_run <- function(commands, ..., session = stata_default_session(), env = pa
     callback_output,
     callback_error
   )
+}
+
+clean_commands <- function(commands) {
+  commands <- split_lines(commands)
+  commands <- commands[commands != ""]
+
+  if (length(commands) == 0L) {
+    cli_abort(c(
+      x = "{.var commands} must not be empty."
+    ))
+  }
+
+  commands
+}
+
+make_pre_commands <- function(session, commands, env) {
+  # Parse commands for any global macros
+  globals <- .extract_globals(commands, env, session$dir)
+  sprintf('global %s "%s"', names(globals), globals)
 }
 
 run_commands <- function(session, user_commands, pre_commands) {

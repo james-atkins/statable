@@ -63,7 +63,8 @@ line_iterator.connection <- function(x) {
 # callback_output is called for every line of the output.
 # callback_error is called with the integer error code and an optional message.
 parse_log <- function(commands, log, is_alive, callback_input, callback_output, callback_error) {
-  commands <- split_lines(commands)
+  abort_bug_if(any(grepl("\r?\n", commands)), "commands contains newlines")
+  abort_bug_if(length(commands) == 0L, "commands are empty")
   log_iter <- line_iterator(log)
 
   found_start <- FALSE
