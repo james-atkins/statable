@@ -75,7 +75,7 @@ stata_run <- function(commands, ..., session = stata_default_session(), env = pa
   }
 
   callback_error <- function(code, message) {
-    cli_abort("Stata error {code}: {message}.", call = NULL)
+    stop_stata(code, message, call = env)
   }
 
   parse_log(

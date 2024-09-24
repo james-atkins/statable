@@ -8,4 +8,6 @@ test_that("stata works", {
   auto <- stata_data_out(session = session)
 
   expect_equal(mean(auto$price), 6165.2568)
+
+  expect_error(stata_run("this_is_an_invalid_command, oops", session = session), class = "statable_error_stata")
 })

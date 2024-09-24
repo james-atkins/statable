@@ -11,6 +11,18 @@ abort_bug_if <- function(condition, message, call = caller_env()) {
   }
 }
 
+stop_stata <- function(code, message, call = NULL) {
+  cli_abort(
+    message = c(
+      x = "Stata error {code}: {message}.",
+      i = "Run {.code search rc {code}} for more information about this error."
+    ),
+    code = code,
+    call = call,
+    class = "statable_error_stata"
+  )
+}
+
 stack <- function(mode = "list") {
   .data <- vector(mode)
 
