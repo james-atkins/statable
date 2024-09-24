@@ -33,7 +33,7 @@ line_iterator.connection <- function(x) {
   if (!isOpen(.con)) {
     open(.con, open = "rt")
   }
-  .lines <- readLines(.con)
+  .lines <- readLines(.con, warn = FALSE)
 
   read_more_if_needed <- function() {
     if (.idx >= length(.lines)) {
