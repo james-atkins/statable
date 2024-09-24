@@ -1,13 +1,19 @@
-abort_bug <- function(message, call = caller_env()) {
-  cli_abort(c(
-    x = "Internal error: {message}.",
-    i = "This is a bug in statable. Please file a {.href [GitHub issue](https://github.com/james-atkins/statable/issues)}."
-  ))
+abort_bug <- function(message, .envir = parent.frame()) {
+  # Crude but want to allow glue expressions to be in message
+  message <- sprintf("Internal error: %s", message)
+  cli_abort(
+    c(
+      x = message,
+      i = "This is a bug in statable. Please file a {.href [GitHub issue](https://github.com/james-atkins/statable/issues)}."
+    ),
+    .envir = .envir,
+    class = "statable_error_bug"
+  )
 }
 
-abort_bug_if <- function(condition, message, call = caller_env()) {
+abort_bug_if <- function(condition, message, .envir = parent.frame()) {
   if (condition) {
-    abort_bug(message, call = call)
+    abort_bug(message, .envir = .envir)
   }
 }
 
