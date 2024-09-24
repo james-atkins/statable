@@ -175,7 +175,7 @@ parse_log <- function(commands, log, is_alive, callback_input, callback_output, 
     if (any(unlist(m, recursive = FALSE, use.names = FALSE) != -1)) {
       code <- as.integer(regmatches(next_line, m)[[1]][[2]])
       callback_error(code, line)
-      next
+      return()
     }
 
     # We are reading output.
