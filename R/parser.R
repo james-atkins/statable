@@ -153,21 +153,19 @@ parse_log <- function(commands, log, is_alive, callback_input, callback_output, 
       current_input$clear()
     }
 
-    # Any errors? This is currently implemented by searching for Stata's return code.
-    # It could be made more robust in the future by checking whether _rc != 0.
-    if ((m <- regexec("^r\\(([0-9]+)\\);", line)) != -1) {
-      code <- as.integer(regmatches(line, m)[[1]][[2]])
-      if (!is.null(prev_line)) {
-        callback_error(code)
-      } else {
-        callback_error(code, prev_line)
-      }
-    }
-
     # Reading output or input?
     if ((m <- regexpr("^\\.\\s*", line)) != -1) {
       command <- regmatches(line, m, invert = TRUE)[[1]][[2]]
       push_input(command)
+      next
+    }
+
+    # Any errors? This is currently implemented by searching for Stata's return code.
+    # It could be made more robust in the future by checking whether _rc != 0.
+    m <- regexec("^r\\(([0-9]+)\\);", next_line)
+    if (any(unlist(m, recursive = FALSE, use.names = FALSE) != -1)) {
+      code <- as.integer(regmatches(next_line, m)[[1]][[2]])
+      callback_error(code, line)
       next
     }
 

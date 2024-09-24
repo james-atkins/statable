@@ -49,7 +49,7 @@ test_that("parser test files run", {
       output$push(.output)
     }
 
-    callback_error <- function(.code, message = NULL) {
+    callback_error <- function(.code, message) {
       code <<- .code
     }
 
