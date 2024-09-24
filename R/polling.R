@@ -57,7 +57,7 @@ close_session.stata_polling <- function(session) {
 }
 
 #' @export
-run_commands.stata_polling <- function(session, user_commands, pre_commands) {
+run_commands.stata_polling <- function(session, commands, pre_commands) {
   input_file <- file(session$input_file_path, open = "wt")
 
   next_input_file_path <- tempfile("input", fileext = ".do", tmpdir = session$dir)
@@ -68,7 +68,7 @@ run_commands.stata_polling <- function(session, user_commands, pre_commands) {
       pre_commands,
       "capture noisily {",
       START_COMMANDS,
-      user_commands,
+      commands,
       END_COMMANDS,
       "}",
       # Clean up current input file and set path of next input file

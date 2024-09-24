@@ -106,7 +106,7 @@ make_pre_commands <- function(session, commands, env) {
   sprintf('global %s "%s"', names(globals), globals)
 }
 
-run_commands <- function(session, user_commands, pre_commands) {
+run_commands <- function(session, commands, pre_commands) {
   UseMethod("run_commands", session)
 }
 

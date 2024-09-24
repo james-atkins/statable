@@ -48,7 +48,7 @@ close_session.stata_named_pipe <- function(session = stata_default_session()) {
 }
 
 #' @export
-run_commands.stata_named_pipe <- function(session, user_commands, pre_commands) {
+run_commands.stata_named_pipe <- function(session, commands, pre_commands) {
   do_file_path <- tempfile("input", fileext = ".do", tmpdir = session$dir)
   do_file <- file(do_file_path, open = "wt")
 
@@ -57,7 +57,7 @@ run_commands.stata_named_pipe <- function(session, user_commands, pre_commands) 
       pre_commands,
       "capture noisily {",
       START_COMMANDS,
-      user_commands,
+      commands,
       END_COMMANDS,
       "}",
       # Clean up after ourselves
