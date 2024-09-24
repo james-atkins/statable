@@ -80,3 +80,7 @@ stack <- function(mode = "list") {
 
   object
 }
+
+indent <- function(x, by = "  ") {
+  paste0(by, gsub("\n", paste0("\n", by), x))
+}
