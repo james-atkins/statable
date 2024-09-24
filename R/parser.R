@@ -118,6 +118,15 @@ parse_log <- function(commands, log, is_alive, callback_input, callback_output, 
 
     found_end <- grepl(END_COMMANDS, line, fixed = TRUE)
     if (found_end) {
+      # Make sure to process the final command if it has no output.
+      if (reading_input()) {
+        command <- match_inputs_with_commands(commands, current_input$data())
+        callback_input(command)
+
+        commands <- commands[-(1:length(command))]
+        current_input$clear()
+      }
+
       break
     }
 

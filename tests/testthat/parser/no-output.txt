@@ -1,0 +1,13 @@
+INPUT
+
+clear
+
+LOG
+
+. /* !!! statable: start of commands !!! */
+. clear
+. /* !!! statable: end of commands !!! */
+
+OUTPUT
+
+END

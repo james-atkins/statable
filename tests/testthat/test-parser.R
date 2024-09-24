@@ -27,7 +27,11 @@ read_parser_test_file <- function(file_name) {
 
   input <- lines[(input_idx+2):(log_idx-2)]
   log <- lines[(log_idx+2):(output_idx-2)]
-  output <- lines[(output_idx+2):(end_idx-2)]
+  if (output_idx + 2 <= end_idx - 2) {
+    output <- lines[(output_idx+2):(end_idx-2)]
+  } else {
+    output <- character()
+  }
 
   list(input = input, log = log, output = output)
 }
