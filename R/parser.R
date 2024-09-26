@@ -121,7 +121,8 @@ parse_log <- function(commands, log, is_alive, callback_input, callback_output, 
     }
 
     found_end <- grepl(END_COMMANDS, line, fixed = TRUE)
-    if (found_end) {
+    found_exit <- line == "end of do-file"
+    if (found_end || found_exit) {
       # Make sure to process the final command if it has no output.
       if (reading_input()) {
         command <- match_inputs_with_commands(commands, current_input$data())
