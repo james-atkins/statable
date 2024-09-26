@@ -15,6 +15,8 @@ test_that("stata works", {
 })
 
 test_that("staggered output is read correctly", {
+  skip_if_no_stata()
+
   session <- suppressMessages(stata_start_session())
   on.exit(stata_close_session(session))
 
