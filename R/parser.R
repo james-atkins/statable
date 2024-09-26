@@ -58,6 +58,9 @@ line_iterator.connection <- function(x) {
   object
 }
 
+PEEK_TRIES <- 3
+LOG_POLL_TIME <- 1/20
+
 # callback_input is called when the complete Stata command has been parsed. It is
 # called with this command as a character vector, with each line an element.
 # callback_output is called for every line of the output.
@@ -108,7 +111,7 @@ parse_log <- function(commands, log, is_alive, callback_input, callback_output, 
 
     line <- log_iter$iterate()
     if (is.na(line)) {
-      Sys.sleep(1/10)  # TODO: organise polling times
+      Sys.sleep(LOG_POLL_TIME)
       next
     }
 
@@ -129,14 +132,6 @@ parse_log <- function(commands, log, is_alive, callback_input, callback_output, 
       }
 
       break
-    }
-
-    # This needs to be after check for found_end else there is a risk of looping
-    # forever.
-    next_line <- log_iter$peek()
-    if (is.na(next_line)) {
-      Sys.sleep(1/10)  # TODO: organise polling times
-      next
     }
 
     if (reading_input()) {
@@ -170,13 +165,29 @@ parse_log <- function(commands, log, is_alive, callback_input, callback_output, 
       next
     }
 
+    # Try and peek the next line.
+    for (i in 1:PEEK_TRIES) {
+      if (!is_alive()) {
+        abort_bug("Stata process has died")
+      }
+      next_line <- log_iter$peek()
+      if (!is.na(next_line)) {
+        break
+      }
+      Sys.sleep(LOG_POLL_TIME)
+    }
+
     # Any errors? This is currently implemented by searching for Stata's return code.
     # It could be made more robust in the future by checking whether _rc != 0.
-    m <- regexec("^r\\(([0-9]+)\\);", next_line)
-    if (any(unlist(m, recursive = FALSE, use.names = FALSE) != -1)) {
-      code <- as.integer(regmatches(next_line, m)[[1]][[2]])
-      callback_error(code, line)
-      return()
+    # Stata produces both an error message and then a return code on the
+    # following line so peek ahead and see if we can find the return code.
+    if (!is.na(next_line)) {
+      m <- regexec("^r\\(([0-9]+)\\);", next_line)
+      if (any(unlist(m, recursive = FALSE, use.names = FALSE) != -1)) {
+        code <- as.integer(regmatches(next_line, m)[[1]][[2]])
+        callback_error(code, line)
+        return()
+      }
     }
 
     # We are reading output.
@@ -189,7 +200,7 @@ parse_log <- function(commands, log, is_alive, callback_input, callback_output, 
     }
 
     # Does this line overflow over to the next line?
-    if (grepl("^> ", next_line)) {
+    if (!is.na(next_line) && grepl("^> ", next_line)) {
       push_output(output, next_line_is_overflow = TRUE)
     } else {
       push_output(output)
